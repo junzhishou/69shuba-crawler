@@ -1,0 +1,16 @@
+# 本地配置与下载内容
+config.py
+download/
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+.env
+
+# IDE
+.idea/
+.vscode/
+*.swp
