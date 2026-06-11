@@ -1,0 +1,50 @@
+name: Download Novels
+
+on:
+  workflow_dispatch:
+    inputs:
+      book_ids:
+        description: "书籍 ID，逗号分隔，例如 88724,74678"
+        required: true
+        type: string
+        default: "88724"
+      semaphore:
+        description: "并发数，建议 1~3"
+        required: false
+        type: string
+        default: "1"
+
+jobs:
+  download:
+    runs-on: ubuntu-latest
+    timeout-minutes: 360
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run crawler
+        env:
+          SHUBA_COOKIE: ${{ secrets.SHUBA_COOKIE }}
+          SHUBA_PROXY: ${{ secrets.SHUBA_PROXY }}
+          SHUBA_BOOK_IDS: ${{ inputs.book_ids }}
+          SHUBA_SEMAPHORE: ${{ inputs.semaphore }}
+        run: python crawler.py
+
+      - name: Upload novels
+        uses: actions/upload-artifact@v4
+        if: success()
+        with:
+          name: novels-${{ github.run_number }}
+          path: download/
+          retention-days: 7
+          if-no-files-found: warn

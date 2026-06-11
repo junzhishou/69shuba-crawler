@@ -12,7 +12,13 @@ import random
 import zipfile
 import shutil
 
-from settings import PUBLIC_HEADERS, PROXY_URL, BASE_DOWNLOAD_DIR, SEMAPHORE_COUNT
+from settings import (
+    PUBLIC_HEADERS,
+    BASE_DOWNLOAD_DIR,
+    SEMAPHORE_COUNT,
+    get_proxy_kwargs,
+    parse_book_ids,
+)
 
 SEMAPHORE = asyncio.Semaphore(SEMAPHORE_COUNT)
 
@@ -20,6 +26,14 @@ SEMAPHORE = asyncio.Semaphore(SEMAPHORE_COUNT)
 BOOKS_TO_DOWNLOAD = [
     # "88724",  # 示例：苟在初圣魔门当人材
 ]
+
+
+def get_books_to_download() -> list[str]:
+    """优先读取环境变量 SHUBA_BOOK_IDS，否则使用脚本内列表。"""
+    env_ids = parse_book_ids(os.environ.get("SHUBA_BOOK_IDS", ""))
+    if env_ids:
+        return env_ids
+    return BOOKS_TO_DOWNLOAD
 
 
 def validate_filename(name):
@@ -42,7 +56,7 @@ async def download_chapter(session, chapter_url, chapter_title, save_dir, pbar, 
             try:
                 await asyncio.sleep(random.uniform(2, 5))
                 r = await session.get(
-                    chapter_url, headers=PUBLIC_HEADERS, proxy=PROXY_URL, timeout=60
+                    chapter_url, headers=PUBLIC_HEADERS, timeout=60, **get_proxy_kwargs()
                 )
 
                 if r.status_code == 200:
@@ -149,7 +163,7 @@ async def process_single_book(book_num):
 
     async with AsyncSession(impersonate="chrome120") as session:
         try:
-            r = await session.get(url, headers=PUBLIC_HEADERS, proxy=PROXY_URL, timeout=30)
+            r = await session.get(url, headers=PUBLIC_HEADERS, timeout=30, **get_proxy_kwargs())
             if r.status_code != 200:
                 print(f"❌ 无法访问目录 {r.status_code}")
                 return
@@ -222,16 +236,22 @@ async def process_single_book(book_num):
 
 
 async def main():
-    if not BOOKS_TO_DOWNLOAD:
-        print("请先在 crawler.py 的 BOOKS_TO_DOWNLOAD 中配置书籍 ID。")
-        return
+    if not PUBLIC_HEADERS.get("Cookie"):
+        print("错误：未配置 Cookie，请设置 SHUBA_COOKIE 环境变量或 config.py。")
+        sys.exit(1)
+
+    books = get_books_to_download()
+    if not books:
+        print("错误：未配置书籍 ID，请设置 SHUBA_BOOK_IDS 环境变量或编辑 BOOKS_TO_DOWNLOAD。")
+        sys.exit(1)
 
     os.makedirs(BASE_DOWNLOAD_DIR, exist_ok=True)
 
-    total = len(BOOKS_TO_DOWNLOAD)
+    total = len(books)
     print(f"🚀 批量任务开始: 共 {total} 本")
+    print(f"📋 书籍 ID: {', '.join(books)}")
 
-    for i, book_id in enumerate(BOOKS_TO_DOWNLOAD):
+    for i, book_id in enumerate(books):
         await process_single_book(book_id)
         if i < total - 1:
             print("⏳ 休息 5 秒...")

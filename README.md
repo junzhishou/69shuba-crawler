@@ -64,11 +64,40 @@ set SHUBA_PROXY=http://127.0.0.1:7890
 
 > Cookie 获取方式：浏览器登录 69书吧 后，在开发者工具 Network 面板复制请求头中的 Cookie。
 
+## GitHub Actions 云端下载
+
+支持在 GitHub Actions 中手动触发下载，下载完成后可从 Artifacts 获取小说文件。
+
+### 1. 配置 Secrets
+
+进入仓库 **Settings → Secrets and variables → Actions**，添加：
+
+| Secret 名称 | 是否必填 | 说明 |
+|-------------|----------|------|
+| `SHUBA_COOKIE` | 必填 | 69书吧 的 Cookie |
+| `SHUBA_PROXY` | 选填 | 远程代理地址，海外 Runner 通常可留空 |
+
+### 2. 手动触发
+
+1. 打开仓库 **Actions** 页
+2. 选择 **Download Novels** 工作流
+3. 点击 **Run workflow**
+4. 填写 `book_ids`（逗号分隔的书籍 ID）
+5. 运行完成后，在 Run 详情页底部 **Artifacts** 下载 `novels-*` 压缩包
+
+> 单本书章节较多时运行时间较长，工作流最长超时 6 小时。建议先用单本、少量章节测试。
+
 ## 使用方法
 
 ### 批量下载
 
-1. 编辑 `crawler.py` 中的 `BOOKS_TO_DOWNLOAD` 列表，填入书籍 ID
+1. 编辑 `crawler.py` 中的 `BOOKS_TO_DOWNLOAD` 列表，填入书籍 ID；或通过环境变量传入：
+
+```bash
+set SHUBA_BOOK_IDS=88724,74678
+python crawler.py
+```
+
 2. 书籍 ID 可从 URL 获取，例如 `https://www.69shuba.com/book/88724/` 中的 `88724`
 3. 运行：
 

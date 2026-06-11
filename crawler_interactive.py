@@ -9,7 +9,7 @@ import io
 import re
 import random
 
-from settings import PUBLIC_HEADERS, PROXY_URL, SEMAPHORE_COUNT
+from settings import PUBLIC_HEADERS, SEMAPHORE_COUNT, get_proxy_kwargs
 
 SEMAPHORE = asyncio.Semaphore(SEMAPHORE_COUNT)
 
@@ -23,7 +23,7 @@ async def download_chapter(session, chapter_url, chapter_title, save_dir):
         try:
             await asyncio.sleep(random.uniform(1.5, 3.5))
             r = await session.get(
-                chapter_url, headers=PUBLIC_HEADERS, proxy=PROXY_URL, timeout=30
+                chapter_url, headers=PUBLIC_HEADERS, timeout=30, **get_proxy_kwargs()
             )
 
             if r.status_code == 200:
@@ -66,7 +66,7 @@ async def get_book_index(book_num):
 
     async with AsyncSession(impersonate="chrome120") as session:
         try:
-            r = await session.get(url, headers=PUBLIC_HEADERS, proxy=PROXY_URL, timeout=20)
+            r = await session.get(url, headers=PUBLIC_HEADERS, timeout=20, **get_proxy_kwargs())
 
             if r.status_code != 200:
                 print(f"无法访问目录，状态码: {r.status_code}")
