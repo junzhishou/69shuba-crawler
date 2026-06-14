@@ -11,13 +11,13 @@ import random
 import zipfile
 import shutil
 
-sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
-from settings import PUBLIC_HEADERS, PROXY_URL, BASE_DOWNLOAD_DIR
-
 # --- 配置区域 ---
 
 # 并发数
 SEMAPHORE = asyncio.Semaphore(2)
+
+# 下载目录
+BASE_DOWNLOAD_DIR = "download"
 
 # 书籍 ID 列表
 BOOKS_TO_DOWNLOAD = [
@@ -38,6 +38,16 @@ BOOKS_TO_DOWNLOAD = [
     "51584",  # 我的诡异人生
     "83216",  # 捞尸人
 ]
+
+PUBLIC_HEADERS = {
+    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36",
+    # ⚠️ 出现 403 时请更新 Cookie
+    "Cookie": "zh_choose=s; _ga_04LTEL5PWY=GS2.1.s1767008106$o1$g0$t1767008106$j60$l0$h0; _ga=GA1.1.2030536588.1767008106",
+    "Referer": "https://www.69shuba.com/",
+}
+
+PROXY_URL = "http://127.0.0.1:7890"
+
 
 # ----------------
 

@@ -11,17 +11,17 @@ import random
 import zipfile
 import shutil
 
-sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
-from settings import PUBLIC_HEADERS, PROXY_URL, BASE_DOWNLOAD_DIR
-
 # --- 配置区域 ---
 
 # 并发数 (建议保持 2-3，不要太高)
 SEMAPHORE = asyncio.Semaphore(1)
 
+# 下载目录
+BASE_DOWNLOAD_DIR = "download"
+
 # 书籍 ID 列表
 BOOKS_TO_DOWNLOAD = [
-    "74678",  # 逼我重生是吧
+    # "74678",  # 逼我重生是吧
     # "49986",  # 都重生了谁谈恋爱啊
     # "74644",  # 都重生了谁考公务员啊
     # "51567",  # 我的模拟长生路
@@ -34,10 +34,23 @@ BOOKS_TO_DOWNLOAD = [
     # "56146",  # 从斩妖除魔开始长生不死
     # "74768",  # 晋末长剑
     # "89321",  # 我的化身正在成为最终BOSS
-    # "88724",  # 苟在初圣魔门当人材
+    "88724",  # 苟在初圣魔门当人材
     # "51584",  # 我的诡异人生
     # "83216",  # 捞尸人
+    # "89747",  # 今天毁灭世界了吗？
+    "9907349",  # 人间冰器
+    "85122",  # 没钱修什么仙？
 ]
+
+PUBLIC_HEADERS = {
+    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36",
+    # ⚠️ 如果 403 报错，请更新 Cookie
+    "Cookie": "zh_choose=s; _ga_04LTEL5PWY=GS2.1.s1767008106$o1$g0$t1767008106$j60$l0$h0; _ga=GA1.1.2030536588.1767008106",
+    "Referer": "https://www.69shuba.com/",
+}
+
+PROXY_URL = "http://127.0.0.1:7890"
+
 
 # ----------------
 
@@ -132,6 +145,7 @@ def post_process_files(temp_chapter_dir, book_title):
     files_to_clean = []
 
     # --- 合并 ---
+    print(f"正在合并 {len(all_files)} 个文件，将自动忽略每章的第1行和第3行...")
     with open(merged_file_path, 'w', encoding='utf-8') as outfile:
         for filename in all_files:
             file_path = os.path.join(temp_chapter_dir, filename)
@@ -139,7 +153,18 @@ def post_process_files(temp_chapter_dir, book_title):
 
             if os.path.exists(file_path):
                 with open(file_path, 'r', encoding='utf-8') as infile:
-                    content = infile.read()
+                    # 🟢 修改点：按行读取，并过滤掉第1行和第3行
+                    lines = infile.readlines()
+                    filtered_lines = []
+
+                    for i, line in enumerate(lines):
+                        # i == 0 是第1行，i == 2 是第3行
+                        if i == 0 or i == 2:
+                            continue
+                        filtered_lines.append(line)
+
+                    content = "".join(filtered_lines)
+
                     outfile.write(chapter_title_in_txt + "\n\n")
                     outfile.write(content)
                     outfile.write("\n\n\n")

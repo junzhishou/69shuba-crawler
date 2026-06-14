@@ -9,14 +9,20 @@ import time
 import re
 import random
 import zipfile  # 🟢 引入压缩库
-import shutil
-
-sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
-from settings import PUBLIC_HEADERS, PROXY_URL
+import shutil  # 🟢 引入文件操作库(用于删除空文件夹)
 
 # --- 配置区域 ---
 
 SEMAPHORE = asyncio.Semaphore(2)
+
+PUBLIC_HEADERS = {
+    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36",
+    "Cookie": "zh_choose=s; _ga_04LTEL5PWY=GS2.1.s1767008106$o1$g0$t1767008106$j60$l0$h0; _ga=GA1.1.2030536588.1767008106",
+    "Referer": "https://www.69shuba.com/",
+}
+
+PROXY_URL = "http://127.0.0.1:7890"
+
 
 # ----------------
 

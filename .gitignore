@@ -1,6 +1,5 @@
 # 本地配置与下载内容
 config.py
-download/
 
 # Python
 __pycache__/
