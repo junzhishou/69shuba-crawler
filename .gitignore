@@ -9,7 +9,11 @@ __pycache__/
 venv/
 .env
 
+# 下载中的临时文件
+*.part
+
 # IDE
 .idea/
 .vscode/
 *.swp
+.DS_Store
